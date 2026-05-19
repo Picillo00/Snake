@@ -3,15 +3,22 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    
+    <!-- ISTRUZIONI ANTI-CACHE PER GLI OCCHIALI -->
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+
     <title>Neural & Touch Snake Game</title>
 
-    <link rel="icon" type="image/png" href="preview.png.jpg">
-    <link rel="apple-touch-icon" href="preview.png.jpg">
+    <link rel="icon" type="image/png" href="preview.png">
+    <link rel="apple-touch-icon" href="preview.png">
 
     <meta property="og:title" content="Neural Snake Game">
     <meta property="og:description" content="Gioca a Snake a schermo intero!">
-    <meta property="og:image" content="preview.png.jpg">
+    <meta property="og:image" content="preview.png">
     <meta property="og:type" content="website">
+    <meta property="og:url" content="https://picillo00.github.io/Prova/">
 
     <style>
         * {
@@ -43,6 +50,16 @@
         canvas {
             background-color: #050505;
             display: block;
+            /* BORDO ROSSO PERIMETRALE PER DELIMITARE IL CAMPO */
+            border: 3px solid #ff0055;
+            box-shadow: 0 0 15px rgba(255, 0, 85, 0.7);
+            animation: borderGlow 2s infinite alternate;
+        }
+
+        /* Effetto pulsante sul bordo rosso per vederlo meglio sul display degli occhiali */
+        @keyframes borderGlow {
+            from { box-shadow: 0 0 10px rgba(255, 0, 85, 0.5); }
+            to { box-shadow: 0 0 25px rgba(255, 0, 85, 0.9); }
         }
 
         #score-board {
@@ -53,7 +70,7 @@
             font-weight: bold;
             color: rgba(0, 229, 255, 0.8);
             text-shadow: 0 0 10px rgba(0, 229, 255, 0.5);
-            pointer-events: none; /* Non blocca i tocchi sullo schermo */
+            pointer-events: none; 
             z-index: 10;
         }
     </style>
@@ -70,7 +87,6 @@
         const ctx = canvas.getContext("2d");
         const scoreElement = document.getElementById("score");
 
-        // Configurazione griglia dinamica basata sullo schermo
         const gridSize = 20;
         let tileCountX, tileCountY;
 
@@ -80,7 +96,6 @@
         let dy = 0;
         let score = 0;
         
-        // CORREZIONE: 100ms è la velocità ottimale (prima era 1ms, ingiocabile)
         const gameSpeed = 100; 
         let gameTimeout;
 
@@ -89,12 +104,12 @@
         let touchEndX = 0;
         let touchEndY = 0;
 
-        // Adatta il canvas a pieno schermo mantenendo i pixel multipli della griglia
         function resizeCanvas() {
-            canvas.width = Math.floor(window.innerWidth / gridSize) * gridSize;
-            canvas.height = Math.floor(window.innerHeight / gridSize) * gridSize;
-            tileCountX = canvas.width / gridSize;
-            tileCountY = canvas.height / gridSize;
+            // Sottraiamo lo spessore del bordo (6px totali) per farlo stare perfettamente a schermo intero
+            canvas.width = (Math.floor(window.innerWidth / gridSize) * gridSize) - 6;
+            canvas.height = (Math.floor(window.innerHeight / gridSize) * gridSize) - 6;
+            tileCountX = Math.floor(canvas.width / gridSize);
+            tileCountY = Math.floor(canvas.height / gridSize);
             resetGame();
         }
 
@@ -116,7 +131,6 @@
             e.preventDefault();
         }, { passive: false });
 
-        // Inizializza le dimensioni ed avvia il loop principale
         resizeCanvas();
         main();
 
@@ -143,7 +157,6 @@
         function drawSnake() {
             snake.forEach((part, index) => {
                 ctx.fillStyle = index === 0 ? "#00e5ff" : "#0097a7";
-                ctx.strokeStyle = "#050505";
                 ctx.fillRect(part.x * gridSize, part.y * gridSize, gridSize - 1, gridSize - 1);
             });
         }
