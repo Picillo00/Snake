@@ -3,349 +3,578 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    
-    <!-- ISTRUZIONI ANTI-CACHE PER GLI OCCHIALI -->
-    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
-    <meta http-equiv="Pragma" content="no-cache">
-    <meta http-equiv="Expires" content="0">
-
-    <title>Neural & Touch Snake Game</title>
-
+    <title>Picillo CHESS - Neural Lock & High-Contrast</title>
     <link rel="icon" type="image/png" href="preview.png.jpg">
-    <link rel="apple-touch-icon" href="preview.png.jpg">
-
-    <meta property="og:title" content="Neural Snake Game">
-    <meta property="og:description" content="Gioca a Snake a schermo intero!">
-    <meta property="og:image" content="preview.png.jpg">
-    <meta property="og:type" content="website">
-    <meta property="og:url" content="https://picillo00.github.io/Prova/">
-
     <style>
-        * {
-            box-sizing: border-box;
-        }
-        body, html {
-            margin: 0;
-            padding: 0;
-            width: 100%;
-            height: 100%;
-            overflow: hidden;
-            background-color: #050505;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            touch-action: none; 
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            user-select: none;
-        }
+        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght=400;700&display=swap');
 
-        #canvas-container {
-            position: relative;
-            width: 100vw;
+        body {
+            background: #020205;
+            color: #fff;
+            font-family: sans-serif;
             height: 100vh;
+            margin: 0;
             display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        canvas {
-            background-color: #050505;
-            display: block;
-            border: 3px solid #00e5ff;
-            box-shadow: 0 0 15px rgba(0, 229, 255, 0.7);
-            animation: borderGlow 2s infinite alternate;
-        }
-
-        @keyframes borderGlow {
-            from { box-shadow: 0 0 10px rgba(0, 229, 255, 0.5); }
-            to { box-shadow: 0 0 25px rgba(0, 229, 255, 0.9); }
-        }
-
-        #score-board {
-            position: absolute;
-            top: 20px;
-            left: 20px;
-            font-size: 1.5rem;
-            font-weight: bold;
-            color: rgba(0, 229, 255, 0.8);
-            text-shadow: 0 0 10px rgba(0, 229, 255, 0.5);
-            pointer-events: none; 
-            z-index: 10;
-        }
-
-        #game-over-screen {
-            display: none;
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(5, 5, 5, 0.85);
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            z-index: 20;
+            overflow: hidden;
+            user-select: none;
         }
 
-        #game-over-title {
-            font-size: 3rem;
-            color: #ff0055;
-            text-shadow: 0 0 20px rgba(255, 0, 85, 0.7);
-            margin-bottom: 10px;
-            font-weight: bold;
-            letter-spacing: 3px;
+        #menu-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            background: #05050a;
+            padding: 40px;
+            border-radius: 8px;
+            border: 2px solid #0b0b14;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.9);
         }
 
-        #game-over-score {
-            font-size: 1.5rem;
-            color: #ffffff;
-            margin-bottom: 30px;
+        h1 {
+            font-family: 'Orbitron', sans-serif;
+            color: #00ffaa;
+            text-shadow: 0 0 8px rgba(0, 255, 170, 0.3);
+            margin-bottom: 20px;
+            letter-spacing: 2px;
         }
 
-        #retry-button {
+        .menu-btn {
+            background: #00ffaa;
+            color: #111;
+            border: none;
             padding: 12px 35px;
+            font-family: 'Orbitron', sans-serif;
+            font-size: 1.1rem;
+            font-weight: bold;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-top: 20px;
+        }
+
+        .diff-select {
+            display: flex;
+            gap: 10px;
+            margin: 15px 0;
+        }
+
+        .diff-btn {
+            background: #0a0a12;
+            border: 1px solid #1a1a26;
+            color: #555;
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+            font-family: 'Orbitron', sans-serif;
+        }
+
+        .diff-btn.active {
+            border-color: #00ffaa;
+            color: #00ffaa;
+            background: rgba(0,255,170,0.05);
+        }
+
+        #game-container {
+            display: none;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        #status-panel {
+            font-family: 'Orbitron', sans-serif;
+            margin-bottom: 20px;
             font-size: 1.3rem;
             font-weight: bold;
-            color: #050505;
-            background-color: #00e5ff;
-            border: 3px solid transparent;
-            border-radius: 5px;
-            cursor: pointer;
-            box-shadow: 0 0 15px rgba(0, 229, 255, 0.6);
+            color: #00ffaa;
+            height: 24px;
+            text-shadow: 0 0 10px rgba(0, 255, 170, 0.5);
+        }
+
+        #board {
+            width: 480px;
+            height: 480px;
+            display: grid;
+            grid-template-columns: repeat(8, 1fr);
+            grid-template-rows: repeat(8, 1fr);
+            border: 8px solid #09090d;
+            background: #030305;
+            box-sizing: border-box;
+        }
+
+        .square {
+            width: 59px;
+            height: 59px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
             outline: none;
-            transition: all 0.1s ease;
+            transition: background-color 0.1s ease;
         }
 
-        /* Evidenzia visivamente il pulsante quando ha il focus automatico */
-        #retry-button:focus {
-            border-color: #ffffff;
-            box-shadow: 0 0 25px rgba(0, 229, 255, 0.9);
-            transform: scale(1.05);
+        .light { background-color: #e1e4c7; }
+        .dark { background-color: #6a8a49; }
+        
+        /* 
+            MIRINO AD ALTO CONTRASTO LAMPEGGIANTE 
+            Rende il focus immediatamente visibile all'occhio umano/puntamento
+        */
+        @keyframes pulse-focus {
+            0% { box-shadow: inset 0 0 0 10px #00ffaa, 0 0 25px #00ffaa; }
+            50% { box-shadow: inset 0 0 0 10px #ffff00, 0 0 35px #ffff00; }
+            100% { box-shadow: inset 0 0 0 10px #00ffaa, 0 0 25px #00ffaa; }
         }
 
-        #retry-button:active {
-            transform: scale(0.95);
+        .square.selected {
+            background-color: #ffff00 !important;
+            z-index: 99 !important;
+            animation: pulse-focus 1s infinite;
+            border: 4px solid #000 !important;
         }
+        
+        /* Punti di movimento massicci e stabili */
+        .square.legal-move::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 24px;
+            height: 24px;
+            background: #00ffaa;
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: 10;
+            box-shadow: 0 0 15px #00ffaa, inset 0 0 5px #000;
+            border: 2px solid #fff;
+        }
+
+        .square.legal-move.capture-target::after {
+            background: #ff0044;
+            width: 28px;
+            height: 28px;
+            box-shadow: 0 0 15px #ff0044, inset 0 0 5px #000;
+            border-radius: 4px; /* Cambia forma per le catture (Massimo contrasto) */
+        }
+
+        /* Stato di focus forzato del browser per la sincronia dell'input */
+        .square:focus {
+            animation: pulse-focus 0.6s infinite;
+            z-index: 100;
+        }
+
+        .piece {
+            font-size: 50px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            width: 100%;
+            height: 100%;
+            user-select: none;
+            pointer-events: none; 
+            z-index: 5;
+        }
+
+        .piece.white { color: #ffffff; text-shadow: 0 2px 4px rgba(0,0,0,0.9), 0 0 5px rgba(255,255,255,0.8); }
+        .piece.black { color: #000000; text-shadow: 0 2px 4px rgba(255,255,255,0.8), 0 0 5px rgba(0,0,0,0.9); }
     </style>
 </head>
 <body>
 
-    <div id="canvas-container">
-        <div id="score-board">Punti: <span id="score">0</span></div>
-        
-        <div id="game-over-screen">
-            <div id="game-over-title">GAME OVER</div>
-            <div id="game-over-score">Punteggio: <span id="final-score">0</span></div>
-            <button id="retry-button" onclick="restartGame()">Riprova</button>
+    <!-- INTERFACCIA MENU -->
+    <div id="menu-container">
+        <h1>Picillo CHESS</h1>
+        <div style="color: #333; font-family: 'Orbitron', sans-serif; font-size: 0.75rem; margin-bottom: 10px;">HARDWARE HARD-LOCK INTERFACE v5.0</div>
+        <div class="diff-select">
+            <button class="diff-btn active" onclick="setDiff('easy', this)">FACILE</button>
+            <button class="diff-btn" onclick="setDiff('medium', this)">MEDIO</button>
+            <button class="diff-btn" onclick="setDiff('hard', this)">DIFFICILE</button>
         </div>
+        <button class="menu-btn" onclick="initGame()">AVVIA PARTITA</button>
+    </div>
 
-        <canvas id="gameCanvas"></canvas>
+    <!-- INTERFACCIA GIOCO -->
+    <div id="game-container">
+        <div id="status-panel">Mossa al Bianco</div>
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
     </div>
 
     <script>
-        const canvas = document.getElementById("gameCanvas");
-        const ctx = canvas.getContext("2d");
-        const scoreElement = document.getElementById("score");
-        const gameOverScreen = document.getElementById("game-over-screen");
-        const finalScoreElement = document.getElementById("final-score");
-        const retryButton = document.getElementById("retry-button");
+        const PIECE_VALUES = { 'p': 10, 'n': 30, 'b': 30, 'r': 50, 'q': 90, 'k': 10000 };
 
-        const gridSize = 20;
-        let tileCountX, tileCountY;
+        const PAWN_TABLE = [
+            [0,  0,  0,  0,  0,  0,  0,  0],
+            [5, 10, 10,-20,-20, 10, 10,  5],
+            [5, -5,-10,  0,  0,-10, -5,  5],
+            [0,  0,  0, 20, 20,  0,  0,  0],
+            [5,  5, 10, 25, 25, 10,  5,  5],
+            [10, 10, 20, 30, 30, 20, 10, 10],
+            [50, 50, 50, 50, 50, 50, 50, 50],
+            [0,  0,  0,  0,  0,  0,  0,  0]
+        ];
 
-        let snake = [];
-        let food = { x: 5, y: 5 };
-        let dx = 0;
-        let dy = 0;
-        let score = 0;
-        let isGameOver = false;
-        
-        const gameSpeed = 100; 
-        let gameTimeout;
+        const KNIGHT_TABLE = [
+            [-50,-40,-30,-30,-30,-30,-40,-50],
+            [-40,-20,  0,  5,  5,  0,-20,-40],
+            [-30,  5, 10, 15, 15, 10,  5,-30],
+            [-30,  0, 15, 20, 20, 15,  0,-30],
+            [-30,  5, 15, 20, 20, 15,  5,-30],
+            [-30,  0, 10, 15, 15, 10,  0,-30],
+            [-40,-20,  0,  0,  0,  0,-20,-40],
+            [-50,-40,-30,-30,-30,-30,-40,-50]
+        ];
 
-        let touchStartX = 0;
-        let touchStartY = 0;
-        let touchEndX = 0;
-        let touchEndY = 0;
-
-        function resizeCanvas() {
-            canvas.width = (Math.floor(window.innerWidth / gridSize) * gridSize) - 6;
-            canvas.height = (Math.floor(window.innerHeight / gridSize) * gridSize) - 6;
-            tileCountX = Math.floor(canvas.width / gridSize);
-            tileCountY = Math.floor(canvas.height / gridSize);
-            if (!isGameOver) resetGame();
-        }
-
-        window.addEventListener('resize', resizeCanvas);
-
-        window.addEventListener("keydown", handleKeyboard);
-        window.addEventListener("touchstart", (e) => {
-            touchStartX = e.changedTouches[0].screenX;
-            touchStartY = e.changedTouches[0].screenY;
-        }, { passive: false });
-
-        window.addEventListener("touchend", (e) => {
-            touchEndX = e.changedTouches[0].screenX;
-            touchEndY = e.changedTouches[0].screenY;
-            handleSwipe();
-        }, { passive: false });
-
-        window.addEventListener("touchmove", (e) => {
-            e.preventDefault();
-        }, { passive: false });
-
-        resizeCanvas();
-        main();
-
-        function main() {
-            if (hasGameEnded()) {
-                isGameOver = true;
-                finalScoreElement.innerText = score;
-                gameOverScreen.style.display = "flex"; 
-                
-                // SPOSTA IL CURSORE / FOCUS DIRETTAMENTE SUL PULSANTE
-                setTimeout(() => {
-                    retryButton.focus();
-                }, 50);
-                return; 
-            }
-
-            gameTimeout = setTimeout(function onTick() {
-                clearCanvas();
-                drawFood();
-                moveSnake();
-                drawSnake();
-                main();
-            }, gameSpeed);
-        }
-
-        function clearCanvas() {
-            ctx.fillStyle = "#050505";
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
-        }
-
-        function drawSnake() {
-            snake.forEach((part, index) => {
-                ctx.fillStyle = index === 0 ? "#00e5ff" : "#0097a7";
-                ctx.fillRect(part.x * gridSize, part.y * gridSize, gridSize - 1, gridSize - 1);
-            });
-        }
-
-        function moveSnake() {
-            if (dx === 0 && dy === 0) return;
-
-            const head = { x: snake[0].x + dx, y: snake[0].y + dy };
-            snake.unshift(head);
-
-            if (snake[0].x === food.x && snake[0].y === food.y) {
-                score += 10;
-                scoreElement.innerText = score;
-                generateFood();
-            } else {
-                snake.pop();
+        class ChessPiece {
+            constructor(color, type) { this.color = color; this.type = type; }
+            getSymbol() {
+                const sym = {
+                    'w': { 'k': '♔', 'q': '♕', 'r': '♖', 'b': '♗', 'n': '♘', 'p': '♙' },
+                    'b': { 'k': '♚', 'q': '♛', 'r': '♜', 'b': '♝', 'n': '♞', 'p': '♟' }
+                };
+                return sym[this.color][this.type];
             }
         }
 
-        function generateFood() {
-            food.x = Math.floor(Math.random() * tileCountX);
-            food.y = Math.floor(Math.random() * tileCountY);
-            snake.forEach(function(part) {
-                if (part.x === food.x && part.y === food.y) generateFood();
-            });
-        }
-
-        function drawFood() {
-            ctx.fillStyle = "#ff0055"; 
-            ctx.fillRect(food.x * gridSize, food.y * gridSize, gridSize - 1, gridSize - 1);
-        }
-        
-        function moveNeural(direction) {
-            if (isGameOver) return; 
-
-            const goingUp = dy === -1;
-            const goingDown = dy === 1;
-            const goingRight = dx === 1;
-            const goingLeft = dx === -1;
-
-            switch(direction.toUpperCase()) {
-                case 'LEFT':
-                    if (!goingRight) { dx = -1; dy = 0; }
-                    break;
-                case 'UP':
-                    if (!goingDown) { dx = 0; dy = -1; }
-                    break;
-                case 'RIGHT':
-                    if (!goingLeft) { dx = 1; dy = 0; }
-                    break;
-                case 'DOWN':
-                    if (!goingUp) { dx = 0; dy = 1; }
-                    break;
-            }
-        }
-
-        function handleSwipe() {
-            // Se è game over, qualsiasi swipe sullo schermo clicca "Riprova"
-            if (isGameOver) {
-                restartGame();
-                return;
+        class ChessEngine {
+            constructor(difficulty) {
+                this.grid = Array(8).fill(null).map(() => Array(8).fill(null));
+                this.turn = 'w';
+                this.difficulty = difficulty || 'easy';
+                this.setupBoard();
             }
 
-            const diffX = touchEndX - touchStartX;
-            const diffY = touchEndY - touchStartY;
-            const threshold = 30; 
-
-            if (Math.abs(diffX) > Math.abs(diffY)) {
-                if (Math.abs(diffX) > threshold) {
-                    if (diffX > 0) moveNeural('RIGHT');
-                    else moveNeural('LEFT');
+            setupBoard() {
+                const pieces = ['r', 'n', 'b', 'q', 'k', 'b', 'n', 'r'];
+                for(let i=0; i<8; i++) {
+                    this.grid[0][i] = new ChessPiece('b', pieces[i]);
+                    this.grid[1][i] = new ChessPiece('b', 'p');
+                    this.grid[6][i] = new ChessPiece('w', 'p');
+                    this.grid[7][i] = new ChessPiece('w', pieces[i]);
                 }
-            } else {
-                if (Math.abs(diffY) > threshold) {
-                    if (diffY > 0) moveNeural('DOWN');
-                    else moveNeural('UP');
+                this.turn = 'w';
+            }
+
+            generateLegalMoves(color) {
+                let moves = [];
+                for (let r = 0; r < 8; r++) {
+                    for (let c = 0; c < 8; c++) {
+                        let p = this.grid[r][c];
+                        if (p && p.color === color) {
+                            moves.push(...this.getPieceMoves(r, c));
+                        }
+                    }
+                }
+                return moves;
+            }
+
+            getPieceMoves(r, c) {
+                let piece = this.grid[r][c];
+                let moves = [];
+                if (!piece) return moves;
+
+                switch (piece.type) {
+                    case 'p':
+                        let dir = piece.color === 'w' ? -1 : 1;
+                        if (r + dir >= 0 && r + dir < 8 && !this.grid[r + dir][c]) {
+                            moves.push({fr: r, fc: c, tr: r + dir, tc: c});
+                            let startRow = piece.color === 'w' ? 6 : 1;
+                            if (r === startRow && !this.grid[r + dir][c] && !this.grid[r + 2 * dir][c]) {
+                                moves.push({fr: r, fc: c, tr: r + 2 * dir, tc: c});
+                            }
+                        }
+                        for (let dc of [-1, 1]) {
+                            let targetC = c + dc;
+                            if (targetC >= 0 && targetC < 8 && r + dir >= 0 && r + dir < 8) {
+                                let target = this.grid[r + dir][targetC];
+                                if (target && target.color !== piece.color) {
+                                    moves.push({fr: r, fc: c, tr: r + dir, tc: targetC});
+                                }
+                            }
+                        }
+                        break;
+
+                    case 'r': moves.push(...this.getSlidingMoves(r, c, [[1,0], [-1,0], [0,1], [0,-1]])); break;
+                    case 'b': moves.push(...this.getSlidingMoves(r, c, [[1,1], [1,-1], [-1,1], [-1,-1]])); break;
+                    case 'q': moves.push(...this.getSlidingMoves(r, c, [[1,0], [-1,0], [0,1], [0,-1], [1,1], [1,-1], [-1,1], [-1,-1]])); break;
+                    case 'n':
+                        let nDeltas = [[2,1],[2,-1],[-2,1],[-2,-1],[1,2],[1,-2],[-1,2],[-1,-2]];
+                        for (let [dr, dc] of nDeltas) {
+                            let tr = r + dr, tc = c + dc;
+                            if (tr >= 0 && tr < 8 && tc >= 0 && tc < 8) {
+                                let target = this.grid[tr][tc];
+                                if (!target || target.color !== piece.color) moves.push({fr: r, fc: c, tr: tr, tc: tc});
+                            }
+                        }
+                        break;
+                    case 'k':
+                        let kDeltas = [[1,0],[-1,0],[0,1],[0,-1],[1,1],[1,-1],[-1,1],[-1,-1]];
+                        for (let [dr, dc] of kDeltas) {
+                            let tr = r + dr, tc = c + dc;
+                            if (tr >= 0 && tr < 8 && tc >= 0 && tc < 8) {
+                                let target = this.grid[tr][tc];
+                                if (!target || target.color !== piece.color) moves.push({fr: r, fc: c, tr: tr, tc: tc});
+                            }
+                        }
+                        break;
+                }
+                return moves;
+            }
+
+            getSlidingMoves(r, c, directions) {
+                let slidingMoves = [];
+                let piece = this.grid[r][c];
+                for (let [dr, dc] of directions) {
+                    let tr = r + dr, tc = c + dc;
+                    while (tr >= 0 && tr < 8 && tc >= 0 && tc < 8) {
+                        let obstacle = this.grid[tr][tc];
+                        if (!obstacle) { slidingMoves.push({fr: r, fc: c, tr: tr, tc: tc}); }
+                        else {
+                            if (obstacle.color !== piece.color) slidingMoves.push({fr: r, fc: c, tr: tr, tc: tc});
+                            break;
+                        }
+                        tr += dr; tc += dc;
+                    }
+                }
+                return slidingMoves;
+            }
+
+            makeMove(m) {
+                this.grid[m.tr][m.tc] = this.grid[m.fr][m.fc];
+                this.grid[m.fr][m.fc] = null;
+                this.turn = this.turn === 'w' ? 'b' : 'w';
+            }
+
+            undoMove(m, originalTarget) {
+                this.grid[m.fr][m.fc] = this.grid[m.tr][m.tc];
+                this.grid[m.tr][m.tc] = originalTarget;
+                this.turn = this.turn === 'w' ? 'b' : 'w';
+            }
+
+            getBotMove() {
+                let moves = this.generateLegalMoves('b');
+                if (moves.length === 0) return null;
+                if (this.difficulty === 'easy') return moves[Math.floor(Math.random() * moves.length)];
+                if (this.difficulty === 'medium') {
+                    let bestMove = null, highestValue = -1;
+                    for (let m of moves) {
+                        let target = this.grid[m.tr][m.tc];
+                        if (target && PIECE_VALUES[target.type] > highestValue) { highestValue = PIECE_VALUES[target.type]; bestMove = m; }
+                    }
+                    return bestMove || moves[Math.floor(Math.random() * moves.length)];
+                }
+                if (this.difficulty === 'hard') {
+                    let bestMove = null, bestScore = -Infinity, alpha = -Infinity, beta = Infinity;
+                    moves.sort((a,b) => (this.grid[b.tr][b.tc] ? 1 : 0) - (this.grid[a.tr][a.tc] ? 1 : 0));
+                    for (let m of moves) {
+                        let target = this.grid[m.tr][m.tc];
+                        this.makeMove(m);
+                        let score = this.minimax(3, alpha, beta, false);
+                        this.undoMove(m, target);
+                        if (score > bestScore) { bestScore = score; bestMove = m; }
+                        alpha = Math.max(alpha, bestScore);
+                    }
+                    return bestMove || moves[0];
                 }
             }
-        }
 
-        function handleKeyboard(event) {
-            // Se è game over e premi Invio (13) o Spazio (32), riavvia
-            if (isGameOver && (event.keyCode === 13 || event.keyCode === 32)) {
-                restartGame();
-                return;
+            minimax(depth, alpha, beta, isMaximizing) {
+                if (depth === 0) return this.evaluateBoardScore();
+                let moves = this.generateLegalMoves(isMaximizing ? 'b' : 'w');
+                if (moves.length === 0) return isMaximizing ? -99999 : 99999;
+                if (isMaximizing) {
+                    let maxEval = -Infinity;
+                    for (let m of moves) {
+                        let target = this.grid[m.tr][m.tc]; this.makeMove(m);
+                        let evaluation = this.minimax(depth - 1, alpha, beta, false);
+                        this.undoMove(m, target); maxEval = Math.max(maxEval, evaluation);
+                        alpha = Math.max(alpha, evaluation); if (beta <= alpha) break;
+                    }
+                    return maxEval;
+                } else {
+                    let minEval = Infinity;
+                    for (let m of moves) {
+                        let target = this.grid[m.tr][m.tc]; this.makeMove(m);
+                        let evaluation = this.minimax(depth - 1, alpha, beta, true);
+                        this.undoMove(m, target); minEval = Math.min(minEval, evaluation);
+                        beta = Math.min(beta, evaluation); if (beta <= alpha) break;
+                    }
+                    return minEval;
+                }
             }
 
-            if (event.keyCode === 37) moveNeural('LEFT');
-            if (event.keyCode === 38) moveNeural('UP');
-            if (event.keyCode === 39) moveNeural('RIGHT');
-            if (event.keyCode === 40) moveNeural('DOWN');
+            evaluateBoardScore() {
+                let score = 0;
+                for (let r = 0; r < 8; r++) {
+                    for (let c = 0; c < 8; c++) {
+                        let p = this.grid[r][c];
+                        if (p) {
+                            let val = PIECE_VALUES[p.type];
+                            if (p.type === 'p') val += (p.color === 'b' ? PAWN_TABLE[r][c] : PAWN_TABLE[7-r][c]);
+                            if (p.type === 'n') val += (p.color === 'b' ? KNIGHT_TABLE[r][c] : KNIGHT_TABLE[7-r][c]);
+                            score += (p.color === 'b' ? val : -val);
+                        }
+                    }
+                }
+                return score;
+            }
         }
 
-        window.moveNeural = moveNeural;
+        // ==========================================
+        //  SISTEMA DI BLOCCO HARDWARE DEL FOCUS (LOCK)
+        // ==========================================
+        let engine = null;
+        let selectedSquare = null;
+        let legalMovesForSelected = [];
+        let currentDifficultySetting = 'easy';
 
-        function hasGameEnded() {
-            if (snake.length === 0) return false;
+        function setDiff(mode, btn) {
+            currentDifficultySetting = mode;
+            document.querySelectorAll('.diff-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+        }
+
+        function initGame() {
+            selectedSquare = null;
+            legalMovesForSelected = [];
+            engine = new ChessEngine(currentDifficultySetting);
             
-            for (let i = 4; i < snake.length; i++) {
-                if (snake[i].x === snake[0].x && snake[i].y === snake[0].y) return true;
+            document.getElementById("menu-container").style.display = "none";
+            document.getElementById("game-container").style.display = "flex";
+            document.getElementById("status-panel").innerText = "Tocca a te (Bianco)";
+            document.getElementById("status-panel").style.color = "#00ffaa";
+            
+            buildBoardDOM();
+            renderUpdate();
+            enforceNeuralLock(); // Attiva la restrizione ad inizio partita
+        }
+
+        function buildBoardDOM() {
+            const boardEl = document.getElementById("board");
+            boardEl.innerHTML = "";
+            for (let r = 0; r < 8; r++) {
+                for (let c = 0; c < 8; c++) {
+                    const square = document.createElement("div");
+                    square.id = `sq-${r}-${c}`;
+                    square.className = `square ${(r + c) % 2 === 0 ? 'light' : 'dark'}`;
+                    
+                    square.onclick = (e) => {
+                        e.preventDefault();
+                        squareClick(r, c);
+                    };
+                    boardEl.appendChild(square);
+                }
             }
-            return snake[0].x < 0 || snake[0].x >= tileCountX || snake[0].y < 0 || snake[0].y >= tileCountY;
         }
 
-        function resetGame() {
-            clearTimeout(gameTimeout);
-            snake = [{ x: Math.floor(tileCountX / 2), y: Math.floor(tileCountY / 2) }];
-            score = 0;
-            scoreElement.innerText = score;
-            dx = 0; 
-            dy = 0;
-            generateFood();
+        // Configura dinamicamente chi può ricevere l'input (SOLO i tuoi pezzi o le mosse possibili)
+        function enforceNeuralLock() {
+            if (!engine || engine.turn !== 'w') return;
+
+            for (let r = 0; r < 8; r++) {
+                for (let c = 0; c < 8; c++) {
+                    const square = document.getElementById(`sq-${r}-${c}`);
+                    let piece = engine.grid[r][c];
+                    let isLegalDest = legalMovesForSelected.some(m => m.tr === r && m.tc === c);
+
+                    // L'input hardware viene concesso SOLO se la casella è una destinazione valida o contiene un tuo pezzo
+                    if (isLegalDest || (piece && piece.color === 'w')) {
+                        square.tabIndex = 0; 
+                    } else {
+                        square.tabIndex = -1; // Rimosso totalmente dal flusso di scansione della banda
+                    }
+                }
+            }
         }
 
-        function restartGame() {
-            isGameOver = false;
-            gameOverScreen.style.display = "none"; 
-            resetGame();
-            main(); 
+        function renderUpdate() {
+            for (let r = 0; r < 8; r++) {
+                for (let c = 0; c < 8; c++) {
+                    const square = document.getElementById(`sq-${r}-${c}`);
+                    square.classList.remove("selected", "legal-move", "capture-target");
+                    square.innerHTML = "";
+
+                    if (selectedSquare && selectedSquare.r === r && selectedSquare.c === c) {
+                        square.classList.add("selected");
+                    }
+
+                    let isLegal = legalMovesForSelected.some(m => m.tr === r && m.tc === c);
+                    if (isLegal) {
+                        square.classList.add("legal-move");
+                        if (engine.grid[r][c] && engine.grid[r][c].color === 'b') {
+                            square.classList.add("capture-target");
+                        }
+                    }
+
+                    const piece = engine.grid[r][c];
+                    if (piece) {
+                        const pEl = document.createElement("div");
+                        pEl.className = `piece ${piece.color === 'w' ? 'white' : 'black'}`;
+                        pEl.innerText = piece.getSymbol();
+                        square.appendChild(pEl);
+                    }
+                }
+            }
+        }
+
+        function squareClick(r, c) {
+            if (!engine || engine.turn !== 'w') return;
+
+            let piece = engine.grid[r][c];
+            let isLegalDest = legalMovesForSelected.find(m => m.tr === r && m.tc === c);
+
+            if (isLegalDest) {
+                engine.makeMove(isLegalDest);
+                selectedSquare = null;
+                legalMovesForSelected = [];
+                renderUpdate();
+                enforceNeuralLock();
+                
+                document.getElementById("status-panel").innerText = "Il Bot sta elaborando...";
+                document.getElementById("status-panel").style.color = "#ffaa00";
+                
+                setTimeout(() => {
+                    let botMove = engine.getBotMove();
+                    if (botMove) {
+                        engine.makeMove(botMove);
+                        document.getElementById("status-panel").innerText = "Tocca a te (Bianco)";
+                        document.getElementById("status-panel").style.color = "#00ffaa";
+                    } else {
+                        document.getElementById("status-panel").innerText = "PARTITA TERMINATA";
+                        document.getElementById("status-panel").style.color = "#ff0044";
+                    }
+                    renderUpdate();
+                    enforceNeuralLock();
+                }, 250);
+
+            } else if (piece && piece.color === 'w') {
+                selectedSquare = {r, c};
+                legalMovesForSelected = engine.getPieceMoves(r, c);
+                renderUpdate();
+                enforceNeuralLock(); // Aggiorna i vincoli per blindare le sole caselle di mossa disponibili
+
+                // Salto immediato alla prima mossa legale
+                if (legalMovesForSelected.length > 0) {
+                    const firstMove = legalMovesForSelected[0];
+                    const targetSquareDOM = document.getElementById(`sq-${firstMove.tr}-${firstMove.tc}`);
+                    if (targetSquareDOM) {
+                        targetSquareDOM.focus(); 
+                    }
+                }
+            } else {
+                selectedSquare = null;
+                legalMovesForSelected = [];
+                renderUpdate();
+                enforceNeuralLock();
+            }
         }
     </script>
 </body>
